@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SearchBoxComponent } from '../../../shared/components/search-box/search-box.component';
 import { CountriesService } from '../../services/countries.service';
 import { Country } from '../../interfaces/country';
-import { NgFor } from '@angular/common';
+import { CommonModule, NgFor, NgIf } from '@angular/common';
+import { CountryTableComponent } from '../../components/country-table/country-table.component';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 
 
 @Component({
@@ -11,19 +13,35 @@ import { NgFor } from '@angular/common';
   imports: [
     SearchBoxComponent,
     NgFor,
+    CountryTableComponent,
+    LoadingSpinnerComponent,
+    NgIf,
+    CommonModule
   ],
   templateUrl: './by-capital-page.component.html',
   styles: ``
 })
-export class ByCapitalPageComponent {
+export class ByCapitalPageComponent implements OnInit{
 
   public countries: Country[] = [];
-  constructor(public CountriesServiceries?: CountriesService){}
+  public isLoading: boolean = false;
+  public initialValue: string = '';
 
-  searchByCapital( term: string){
-    this.CountriesServiceries?.searchCapital(term)
+  constructor(private CountriesServiceries: CountriesService){}
+
+  ngOnInit(): void {
+    this.countries = this.CountriesServiceries.cacheStore.byCapital.countries;
+    this.initialValue = this.CountriesServiceries.cacheStore.byCapital.term;
+  }
+
+  searchByCapital( term: string): void{
+
+    this.isLoading = true;
+
+    this.CountriesServiceries.searchCapital(term)
     .subscribe( countries => {
       this.countries = countries;
+      this.isLoading = false;
     })
   }
 }
